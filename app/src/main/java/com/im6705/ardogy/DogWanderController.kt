@@ -22,8 +22,6 @@ internal class DogWanderController(
 ) {
     enum class State { WALKING, RESTING, PAUSED, TRACKING_LOST, NEEDS_SPACE, PLANE_LOST }
 
-    private data class Point(val x: Float, val z: Float)
-
     // Original metre scale is preserved. The supplied dog's evaluated Walk envelope needs 0.33 m;
     // glTF accessor bounds can describe its smaller seated bind mesh. Keep the larger measured disk.
     private val margin = dog.boundingBox.let {
@@ -31,7 +29,7 @@ internal class DogWanderController(
     }
     private val idle = clipIndex("Idle")
     private val walk = clipIndex("Walk")
-    private var target: Point? = null
+    private var target: GroundPoint? = null
     private var restSeconds = 1.2f
     private var yaw = 0f
     private var clip = idle
@@ -47,7 +45,7 @@ internal class DogWanderController(
         applyAnimation(idle, 0f)
     }
 
-    fun canPlace(): Boolean = contains(polygon(), Point(0f, 0f))
+    fun canPlace(): Boolean = area().contains(GroundPoint(0f, 0f))
 
     fun update(dt: Float, cameraTracking: Boolean, userPaused: Boolean): State {
         plane.subsumedBy?.let { plane = it }
@@ -63,19 +61,19 @@ internal class DogWanderController(
             return State.PAUSED
         }
 
-        val polygon = polygon()
-        val current = Point(dog.position.x, dog.position.z)
-        if (!contains(polygon, current)) {
+        val area = area()
+        val current = GroundPoint(dog.position.x, dog.position.z)
+        if (!area.contains(current)) {
             target = null
             applyAnimation(idle, dt)
             return State.NEEDS_SPACE
         }
 
-        if (target?.let { !contains(polygon, it) } == true) target = null
+        if (target?.let { !area.contains(it) } == true) target = null
         if (target == null) {
             restSeconds -= dt
             if (restSeconds <= 0f) {
-                target = chooseTarget(polygon, current)
+                target = area.chooseTarget(current, random)
                 needsSpace = target == null
                 restSeconds = if (target == null) 1f else random.nextFloat() * 2f + 1f
             }
@@ -102,9 +100,9 @@ internal class DogWanderController(
         }
 
         val step = min(distance, WALK_METRES_PER_SECOND * dt)
-        val next = Point(current.x + dx / distance * step, current.z + dz / distance * step)
+        val next = GroundPoint(current.x + dx / distance * step, current.z + dz / distance * step)
         // Both endpoints lie in the inset convex polygon; re-check every actual movement step.
-        if (!contains(polygon, next)) {
+        if (!area.contains(next)) {
             target = null
             applyAnimation(idle, dt)
             return State.NEEDS_SPACE
@@ -137,58 +135,21 @@ internal class DogWanderController(
         dog.animator.updateBoneMatrices()
     }
 
-    private fun polygon(): List<Point> {
+    private fun polygon(): List<GroundPoint> {
         val vertices = plane.polygon.duplicate().apply { rewind() }
         val worldToAnchor = anchor.pose.inverse()
         val planeToWorld = plane.centerPose
-        val points = ArrayList<Point>(vertices.remaining() / 2)
+        val points = ArrayList<GroundPoint>(vertices.remaining() / 2)
         while (vertices.remaining() >= 2) {
             val point = worldToAnchor.transformPoint(
                 planeToWorld.transformPoint(floatArrayOf(vertices.get(), 0f, vertices.get()))
             )
-            points += Point(point[0], point[2])
+            points += GroundPoint(point[0], point[2])
         }
         return points
     }
 
-    private fun contains(polygon: List<Point>, point: Point): Boolean {
-        if (polygon.size < 3 || hypot(point.x, point.z) > MAX_ANCHOR_DISTANCE) return false
-        var area = 0f
-        for (i in polygon.indices) {
-            val a = polygon[i]
-            val b = polygon[(i + 1) % polygon.size]
-            area += a.x * b.z - b.x * a.z
-        }
-        if (abs(area) < 0.0001f) return false
-        val sign = if (area > 0f) 1f else -1f
-        for (i in polygon.indices) {
-            val a = polygon[i]
-            val b = polygon[(i + 1) % polygon.size]
-            val edgeX = b.x - a.x
-            val edgeZ = b.z - a.z
-            val length = hypot(edgeX, edgeZ)
-            if (length < 0.0001f) continue
-            val inwardDistance = sign * (edgeX * (point.z - a.z) - edgeZ * (point.x - a.x)) / length
-            if (inwardDistance < margin) return false
-        }
-        return true
-    }
-
-    private fun chooseTarget(polygon: List<Point>, current: Point): Point? {
-        if (polygon.size < 3) return null
-        val minX = max(-MAX_ANCHOR_DISTANCE, polygon.minOf { it.x })
-        val maxX = min(MAX_ANCHOR_DISTANCE, polygon.maxOf { it.x })
-        val minZ = max(-MAX_ANCHOR_DISTANCE, polygon.minOf { it.z })
-        val maxZ = min(MAX_ANCHOR_DISTANCE, polygon.maxOf { it.z })
-        if (maxX <= minX || maxZ <= minZ) return null
-        repeat(48) {
-            val candidate = Point(minX + random.nextFloat() * (maxX - minX), minZ + random.nextFloat() * (maxZ - minZ))
-            if (hypot(candidate.x - current.x, candidate.z - current.z) >= 0.25f && contains(polygon, candidate)) {
-                return candidate
-            }
-        }
-        return null
-    }
+    private fun area() = WanderArea(polygon(), margin, MAX_ANCHOR_DISTANCE)
 
     private fun wrapDegrees(angle: Float) = ((angle + 180f) % 360f + 360f) % 360f - 180f
 

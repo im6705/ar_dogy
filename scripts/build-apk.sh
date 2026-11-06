@@ -14,7 +14,7 @@ else
 fi
 [[ "$version_code" =~ ^[1-9][0-9]*$ ]] || { echo 'Version code must be a positive integer'; exit 1; }
 
-bash ./gradlew --no-daemon --console=plain :app:assembleRelease :app:lintRelease \
+bash ./gradlew --no-daemon --console=plain :app:testReleaseUnitTest :app:assembleRelease :app:lintRelease \
   "-PappVersionName=$version_name" "-PappVersionCode=$version_code"
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 [[ -n "$sdk" ]] || { echo 'Set ANDROID_HOME to the Android SDK'; exit 1; }
