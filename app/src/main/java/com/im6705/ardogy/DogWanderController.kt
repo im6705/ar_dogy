@@ -24,9 +24,10 @@ internal class DogWanderController(
 
     private data class Point(val x: Float, val z: Float)
 
-    // Original metre scale is preserved. The complete horizontal bounds can rotate inside this disk.
+    // Original metre scale is preserved. The supplied dog's evaluated Walk envelope needs 0.33 m;
+    // glTF accessor bounds can describe its smaller seated bind mesh. Keep the larger measured disk.
     private val margin = dog.boundingBox.let {
-        hypot(abs(it.center[0]) + it.halfExtent[0], abs(it.center[2]) + it.halfExtent[2]) + 0.12f
+        max(0.33f, hypot(abs(it.center[0]) + it.halfExtent[0], abs(it.center[2]) + it.halfExtent[2])) + 0.12f
     }
     private val idle = clipIndex("Idle")
     private val walk = clipIndex("Walk")
