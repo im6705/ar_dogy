@@ -1,0 +1,17 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+work/
+dist/
+captures/
+*.hprof
+__pycache__/
+*.pyc
+.codex/tasks/
+# Only the explicitly public development key is committed.
+*.jks
+*.keystore
+!signing/development.keystore

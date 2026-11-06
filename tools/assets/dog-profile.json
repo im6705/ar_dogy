@@ -1,0 +1,26 @@
+{
+  "description": "Inspected Tripo seated greyhound rig: source Z up, -Y forward. Explicit rest-anatomy mapping; not inferred from misleading Limb labels.",
+  "armature": "Armature.001",
+  "source_up": "+Z",
+  "source_forward": "-Y",
+  "target_height_m": 0.45,
+  "fps": 30,
+  "walk_seconds": 1.2,
+  "stance_fraction": 0.65,
+  "foot_travel_source_units": 0.24,
+  "foot_lift_source_units": 0.055,
+  "root": "tripo__Root",
+  "pelvis_raise": 0.24,
+  "torso_pivot": [0.0401235, 0.204439, 0.311435],
+  "torso_pitch_degrees": 45,
+  "torso_chain": ["tripo__0_Left_Limb_0", "tripo__0_Left_Limb_1", "tripo__Spine_0", "tripo__Spine_1", "tripo__Spine_2", "tripo__Spine_3"],
+  "neck": "tripo__Spine_4",
+  "head": "tripo__Head_0",
+  "tail": ["tripo__Tail_0", "tripo__Tail_1", "tripo__Tail_2"],
+  "legs": [
+    {"role":"hind_left", "chain":["tripo__1_Left_Limb_0","tripo__1_Left_Limb_1","tripo__1_Left_Limb_2","tripo__1_Left_Limb_3"], "pole":[0,-1,0], "foot":[0.17,0.22,0.04], "phase":0},
+    {"role":"hind_right", "chain":["tripo__0_Right_Limb_0","tripo__0_Right_Limb_1","tripo__0_Right_Limb_2","tripo__0_Right_Limb_3"], "pole":[0,-1,0], "foot":[-0.05,0.22,0.04], "phase":0.5},
+    {"role":"front_left", "chain":["bone_33","bone_34","bone_35","bone_36","bone_37","bone_38","bone_39"], "pole":[0,1,0], "foot":[0.12,-0.28,0.04], "phase":0.75},
+    {"role":"front_right", "chain":["bone_40","bone_41","bone_42","bone_43","bone_44","bone_45","bone_46"], "pole":[0,1,0], "foot":[-0.02,-0.28,0.04], "phase":0.25}
+  ]
+}
