@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ArDogy" parent="Base.Theme.ArDogy">
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
