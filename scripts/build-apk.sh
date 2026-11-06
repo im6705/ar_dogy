@@ -14,8 +14,13 @@ else
 fi
 [[ "$version_code" =~ ^[1-9][0-9]*$ ]] || { echo 'Version code must be a positive integer'; exit 1; }
 
-bash ./gradlew --no-daemon --console=plain :app:assembleRelease :app:lintRelease \
-  "-PappVersionName=$version_name" "-PappVersionCode=$version_code"
+if ! bash ./gradlew --no-daemon --console=plain :app:testReleaseUnitTest :app:assembleRelease :app:lintRelease \
+  "-PappVersionName=$version_name" "-PappVersionCode=$version_code"; then
+  # Gradle prints only the first lint error by default. Preserve the full diagnostics in CI logs.
+  lint_report=app/build/intermediates/lint_intermediate_text_report/release/lintReportRelease/lint-results-release.txt
+  if [[ -f "$lint_report" ]]; then cat "$lint_report"; fi
+  exit 1
+fi
 sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
 [[ -n "$sdk" ]] || { echo 'Set ANDROID_HOME to the Android SDK'; exit 1; }
 build_tools="$sdk/build-tools/36.0.0"

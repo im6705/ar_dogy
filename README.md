@@ -43,6 +43,10 @@ git push origin v0.1.0
 
 ## 검증 범위
 
+이동 영역의 단위 테스트는 `./gradlew :app:testReleaseUnitTest`로 실행합니다. 좁고 긴 바닥,
+평면 방향, 안전 여백, 앵커 거리 제한 및 무작위 후보 선택 실패 시 대체 경로를 검사합니다.
+`scripts/build-apk.sh`와 GitHub Actions도 이 테스트를 실행한 뒤 APK를 검증합니다.
+
 실제 Android 기기는 이번 작업에 연결되지 않았습니다. APK 빌드·서명·포함 자산 검증과 실제 기기의 카메라/AR 동작 검증은 구분합니다. [기기 테스트 절차](docs/device-acceptance.md)에 따라 바닥 인식, 배치, 이동, 추적 중단, 재개를 확인할 수 있습니다.
 
 기술 기준: [ARCore 기기 지원](https://developers.google.com/ar/devices), [Android AR 설정](https://developers.google.com/ar/develop/java/enable-arcore), [앵커 동작](https://developers.google.com/ar/develop/anchors), [Blender USD 지원](https://docs.blender.org/manual/en/4.2/files/import_export/usd.html).
